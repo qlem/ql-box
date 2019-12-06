@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+
+  pwshield:
+    build: ./
+    restart: always
+    environment:
+      DB_HOST: localhost
+      DB_USER: pwshield
+      DB_PWD: iH2vc9mE4FYB2u6eU3x2
+      DB_DATABASE: db
+      DB_KEY: BuzW7kH6n84BGy22
+    ports:
+      - 3142:3000
+    depends_on:
+      - db
+    networks:
+      - pwshield-net
+
+  db:
+    container_name: pwshield_db
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Jr6TU9bnv48b5WV58fQa
+      MYSQL_USER: pwshield
+      MYSQL_PASSWORD: iH2vc9mE4FYB2u6eU3x2
+      MYSQL_DATABASE: db
+    volumes:
+      - /var/pwshield/data:/var/lib/mysql
+    networks:
+      - pwshield-net
+
+networks:
+  pwshield-net:
+    driver: bridge
