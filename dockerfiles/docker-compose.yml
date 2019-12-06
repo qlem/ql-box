@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+
+  db:
+    container_name: pwshield_db
+    image: mariadb
+    restart: always
+    ports:
+        - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: Jr6TU9bnv48b5WV58fQa
+      MYSQL_USER: pwshield
+      MYSQL_PASSWORD: iH2vc9mE4FYB2u6eU3x2
+      MYSQL_DATABASE: db
+    volumes:
+      - /var/pwshield/data:/var/lib/mysql
+
+  adminer:
+    container_name: pwshield_adminer
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
