@@ -31,10 +31,10 @@ services:
       MYSQL_DATABASE: db
     volumes:
       - type: bind
-        source: ./db/config.cnf
+        source: ./db/config
         target: /etc/mysql/conf.d
       - type: bind
-        source: ./db/init.sql
+        source: ./db/init
         target: /docker-entrypoint-initdb.d
       - /var/pwshield/data:/var/lib/mysql
     networks:
