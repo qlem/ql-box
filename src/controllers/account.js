@@ -2,15 +2,15 @@
 
 const Router = require('koa-router')
 const Auth = require('./../middleware/auth')
-const Login = require('./../models/login')
+const Account = require('./../models/account')
 
 const router = new Router()
 
 router.use(Auth.auth)
 
 function checkFields (data) {
-    if (data.title == null || data.password == null || data.email == null && data.username == null || 
-        data.title == '' || data.password == '' || data.email == '' && data.username == '') {
+    if (data.name == null || data.password == null || data.email == null && data.username == null || 
+        data.name == '' || data.password == '' || data.email == '' && data.username == '') {
         return false
     }
     Object.keys(data).forEach(key => {
@@ -37,11 +37,11 @@ function checkBody (ctx, next) {
 
 router.get('/', async (ctx, next) => {
     try {
-        if (ctx.query == {} || ctx.query.title == null) {
+        if (ctx.query == {} || ctx.query.name == null) {
             ctx.status = 400
             return
         }
-        const res = await Login.findOne(ctx.query.title)
+        const res = await Account.findOne(ctx.query.name)
         if (res.length < 1) {
             ctx.body = {}
         } else {
@@ -55,10 +55,10 @@ router.get('/', async (ctx, next) => {
 
 router.get('/all', async (ctx, next) => {
     try {
-        const res = await Login.findAll()
+        const res = await Account.findAll()
         const array = []
         res.forEach(item => {
-            array.push(item.title)
+            array.push(item.name)
         })
         ctx.body = array
     } catch (err) {
@@ -74,7 +74,7 @@ router.post('/', checkBody, async (ctx, next) => {
             ctx.status = 400
             return
         }
-        const res = await Login.insert(data.title, data.email, data.username, data.password)
+        const res = await Account.insert(data.name, data.email, data.username, data.password)
         ctx.body = res
     } catch (err) {
         console.error(err)
@@ -98,7 +98,7 @@ router.post('/bulk', checkBody, async (ctx, next) => {
                 result.failed++
             } else {
                 try {
-                    const res = await Login.insert(data[i].title, data[i].email, data[i].username, data[i].password)
+                    const res = await Account.insert(data[i].name, data[i].email, data[i].username, data[i].password)
                     result.inserted++
                 } catch (err) {
                     result.failed++
