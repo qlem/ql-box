@@ -1,0 +1,15 @@
+CREATE TABLE users (
+    id INT(6) UNSIGNED NOT NULL AUTO_INCREMENT,
+    username VARCHAR(16) NOT NULL UNIQUE,
+    password VARCHAR(64) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE='InnoDB';
+
+CREATE TABLE passwords (
+    id INT(6) UNSIGNED NOT NULL AUTO_INCREMENT,
+    title VARCHAR(64) NOT NULL UNIQUE,
+    email VARCHAR(64),
+    username VARCHAR(64),
+    password VARBINARY(128) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE='InnoDB';

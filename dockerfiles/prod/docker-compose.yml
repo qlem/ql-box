@@ -30,6 +30,12 @@ services:
       MYSQL_PASSWORD: iH2vc9mE4FYB2u6eU3x2
       MYSQL_DATABASE: db
     volumes:
+      - type: bind
+        source: ./db/config.cnf
+        target: /etc/mysql/conf.d
+      - type: bind
+        source: ./db/init.sql
+        target: /docker-entrypoint-initdb.d
       - /var/pwshield/data:/var/lib/mysql
     networks:
       - pwshield-net
