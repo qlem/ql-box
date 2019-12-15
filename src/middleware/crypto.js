@@ -32,14 +32,34 @@ exports.encrypt = async (ctx, next) => {
 
 exports.decrypt = async (ctx, next) => {
     try {
-        let key = await readAsync('./.pem/private.pem', 'utf8')
-        const encrypted = Buffer.from(ctx.request.rawBody, 'base64')
-        const decrypted = crypto.privateDecrypt({
+        
+        const array = ctx.request.rawBody.split(':')
+        console.log(array[1])
+        if (array.length != 3) {
+            ctx.status = 400
+            return
+        }
+
+        const algorithm = 'aes-128-cbc'
+
+        let iv = Buffer.from(array[0], 'base64')
+        iv = Buffer.from(iv.toString(), 'hex')
+        
+        const key = await readAsync('./.pem/private.pem', 'utf8')
+        let simKey = crypto.privateDecrypt({
             key: key,
             padding: crypto.constants.RSA_PKCS1_PADDING
-        }, encrypted)
-        ctx.request.body = JSON.parse(decrypted.toString('utf8'))
-        return next()
+        }, Buffer.from(array[1], 'base64'))
+        simKey = Buffer.from(simKey.toString(), 'hex')
+        
+        const encrypted = Buffer.from(array[2], 'base64')
+        const decipher = crypto.createDecipheriv(algorithm, simKey, iv)
+        let decrypted = decipher.update(encrypted, 'base64', 'utf8')
+        decrypted += decipher.final('utf8')
+        console.log(decrypted)
+
+        // ctx.request.body = JSON.parse(decrypted.toString('utf8'))
+        // return next()
     } catch (err) {
         console.error(err)
         ctx.status = 500

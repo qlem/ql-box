@@ -5,11 +5,22 @@ USER=qlem
 
 function display_menu() {
     echo "Menu:
-get     Fetch one/all accounts
-post    Add one/many accounts"
+  get     Fetch one/all accounts
+  post    Add one/many accounts"
 }
 
 function encrypt() {
+    IV=$(openssl rand -hex 16)
+    KEY=$(openssl rand -hex 16)
+    ENC=$(echo -n $1 | openssl enc -aes-128-cbc -e -a -A -salt -iv $IV -K $KEY)
+    EKEY=$(echo -n $KEY | openssl rsautl -encrypt -pubin -inkey ./.pem/public.pem | base64)
+    EIV=$(echo -n $IV | base64)
+    echo -n "$EIV:$EKEY:$ENC"
+    # DEC=$(echo $ENC | openssl enc -aes-128-cbc -d -a -A -iv $IV -K $KEY)
+    # echo -n $DEC
+}
+
+function encrypt_bak() {
     local data=$(echo -n $1 | openssl rsautl -encrypt -pubin -inkey ./.pem/public.pem | base64)
     echo -n $data
 }
@@ -39,7 +50,27 @@ function post() {
         RES=$(curl -sS -u $USER -X POST $API_URI"/account" -d "$(encrypt $JSON)")
         echo $(decrypt $RES)
     elif [[ $INP == "many" ]]; then
-        echo "many"
+        echo "JSON file path? [/path/to/file.json]"
+        echo -n "post > "
+        read FILE
+        if [[ ! -f $FILE ]]; then
+            echo "No such file or directory"
+            return 1
+        elif jq -e . >/dev/null 2>&1 <<< $(cat $FILE); then
+            JSON=$(cat $FILE | jq -c .)
+            
+            IV=$(openssl rand -hex 16)
+            KEY=$(openssl rand -hex 16)
+            ENC=$(echo -n $JSON | openssl enc -aes-128-cbc -e -a -A -salt -iv $IV -K $KEY)
+            EKEY=$(echo -n $KEY | openssl rsautl -encrypt -pubin -inkey ./.pem/public.pem | base64)
+            EIV=$(echo -n $IV | base64)
+            DATA="$EIV:$EKEY:$ENC"
+            # $(encrypt $json)
+            RES=$(curl -sS -u $USER -X POST $API_URI"/account/bulk" -d "$DATA")
+            # echo $(decrypt $RES) 
+        else
+            echo "JSON file is not valid!"
+        fi
     else
         echo "Unknown command"
     fi

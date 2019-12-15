@@ -7,7 +7,7 @@ const User = require('./../models/user')
 function a (ctx, next) {
     const regex = /^Basic [A-z0-9+=/]+$/
     const credentials = ctx.get('Authorization')
-    if (credentials == null || !regex.test(credentials)) {
+    if (!credentials || !regex.test(credentials)) {
         ctx.status = 401
         return
     }
@@ -16,7 +16,8 @@ function a (ctx, next) {
 }
 
 function b (ctx, next) {
-    const credentials = Buffer.from(ctx.state.credentials.substring(6), 'base64').toString().split(':')
+    const credentials = Buffer.from(ctx.state.credentials.substring(6), 'base64')
+        .toString().split(':')
     if (credentials.length != 2) {
         ctx.status = 401
         return
