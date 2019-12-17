@@ -3,6 +3,8 @@
 const fs = require('fs')
 const crypto = require('crypto')
 
+const algorithm = 'aes-128-cbc'
+
 function readAsync (path, encoding) {
     return new Promise((resolve, reject) => {
         fs.readFile(path, encoding, (err, data) => {
@@ -14,15 +16,36 @@ function readAsync (path, encoding) {
     })
 }
 
+function randomBytesAsync (size) {
+    return new Promise((resolve, reject) => {
+        crypto.randomBytes(size, (err, buf) => {
+            if (err) {
+                return reject(err)
+            }
+            return resolve(buf)
+        })
+    })
+}
+
 exports.encrypt = async (ctx, next) => {
     try {
-        const key = await readAsync('./.pem/user.pem', 'utf8')
-        const data = Buffer.from(JSON.stringify(ctx.body))
-        const encrypted = crypto.publicEncrypt({
-            key: key,
-            padding: crypto.constants.RSA_PKCS1_PADDING
-        }, data)
-        ctx.body = encrypted.toString('base64')
+        const publicKey = await readAsync('./.pem/user.pem', 'utf8')
+        const key = await randomBytesAsync(16)
+        let iv = await randomBytesAsync(16)
+        
+        const cipher = crypto.createCipheriv(algorithm, key, iv)
+        let encrypted = cipher.update(JSON.stringify(ctx.body), 'utf8', 'base64')
+        encrypted += cipher.final('base64')
+        encrypted = encrypted.toString('base64')
+      
+        let encryptedKey = crypto.publicEncrypt({
+            key: publicKey,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
+        }, key)
+        encryptedKey = encryptedKey.toString('base64')
+        iv = iv.toString('base64')
+
+        ctx.body = `${iv}:${encryptedKey}:${encrypted}`
         return next()
     } catch (err) {
         console.error(err)
@@ -32,34 +55,29 @@ exports.encrypt = async (ctx, next) => {
 
 exports.decrypt = async (ctx, next) => {
     try {
-        
         const array = ctx.request.rawBody.split(':')
-        console.log(array[1])
         if (array.length != 3) {
             ctx.status = 400
             return
         }
 
-        const algorithm = 'aes-128-cbc'
-
         let iv = Buffer.from(array[0], 'base64')
         iv = Buffer.from(iv.toString(), 'hex')
         
-        const key = await readAsync('./.pem/private.pem', 'utf8')
-        let simKey = crypto.privateDecrypt({
-            key: key,
-            padding: crypto.constants.RSA_PKCS1_PADDING
+        const privateKey = await readAsync('./.pem/private.pem', 'utf8')
+        let key = crypto.privateDecrypt({
+            key: privateKey,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
         }, Buffer.from(array[1], 'base64'))
-        simKey = Buffer.from(simKey.toString(), 'hex')
+        key = Buffer.from(key.toString(), 'hex')
         
         const encrypted = Buffer.from(array[2], 'base64')
-        const decipher = crypto.createDecipheriv(algorithm, simKey, iv)
+        const decipher = crypto.createDecipheriv(algorithm, key, iv)
         let decrypted = decipher.update(encrypted, 'base64', 'utf8')
         decrypted += decipher.final('utf8')
-        console.log(decrypted)
-
-        // ctx.request.body = JSON.parse(decrypted.toString('utf8'))
-        // return next()
+        
+        ctx.request.body = JSON.parse(decrypted)
+        return next()
     } catch (err) {
         console.error(err)
         ctx.status = 500

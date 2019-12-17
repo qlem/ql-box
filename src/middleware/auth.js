@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt')
 const User = require('./../models/user')
 
 function a (ctx, next) {
-    const regex = /^Basic [A-z0-9+=/]+$/
+    const regex = /^Basic [A-Za-z0-9+/]+={0,2}$/
     const credentials = ctx.get('Authorization')
     if (!credentials || !regex.test(credentials)) {
         ctx.status = 401

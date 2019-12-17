@@ -98,16 +98,16 @@ router.post('/bulk', Crypto.decrypt, checkBody, async (ctx, next) => {
             failed: 0
         }
         for (let i = 0; i < data.length; i++) {
-            if (!checkAccountFields(data[i])) {
-                result.failed++
-            } else {
+            if (checkAccountFields(data[i])) {
                 try {
-                    const res = await Account.insert(data[i].name, 
-                        data[i].email, data[i].username, data[i].password)
+                    const res = await Account.insert(data[i].name,  data[i].email, 
+                        data[i].username, data[i].password)
                     result.inserted++
                 } catch (err) {
                     result.failed++
                 }
+            } else {
+                result.failed++
             }
         }
         ctx.body = result

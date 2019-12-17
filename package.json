@@ -1,7 +1,7 @@
 {
-  "name": "ql-pwshield",
+  "name": "ql-box",
   "version": "1.0.0",
-  "description": "A secure password management solution.",
+  "description": "A secure box to store and manage passwords.",
   "main": "src/app.js",
   "dependencies": {
     "bcrypt": "^3.0.7",
@@ -21,12 +21,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/qlem/ql-pwshield.git"
+    "url": "git+https://github.com/qlem/ql-box.git"
   },
   "author": "qlem",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/qlem/ql-pwshield/issues"
+    "url": "https://github.com/qlem/ql-box/issues"
   },
-  "homepage": "https://github.com/qlem/ql-pwshield#readme"
+  "homepage": "https://github.com/qlem/ql-box#readme"
 }
