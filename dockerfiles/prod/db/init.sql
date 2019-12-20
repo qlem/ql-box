@@ -13,3 +13,5 @@ CREATE TABLE accounts (
     password VARBINARY(128) NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE='InnoDB';
+
+INSERT INTO users (username, password) VALUES ('john', 'bcryptHashedPassword');

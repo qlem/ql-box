@@ -3,7 +3,7 @@
 API_URI='http://localhost:3000'
 USER='john'
 
-# should be the server public key for encryption
+# should be the api public key for encryption
 PUB_KEY='/path/to/keys/dir/ql_box.pem' 
 
 # should be the user private key for decryption
