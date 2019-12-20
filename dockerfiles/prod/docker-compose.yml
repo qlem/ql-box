@@ -1,34 +1,38 @@
 version: '3.7'
-
 services:
-
-  pwshield:
+  
+    ql-box:
+      container_name: ql_box
     build:
       context: ./../../.
       dockerfile: ./dockerfiles/prod/Dockerfile
     restart: always
     environment:
-      DB_HOST: pwshield_db
-      DB_USER: pwshield
-      DB_PWD: iH2vc9mE4FYB2u6eU3x2
-      DB_DATABASE: db
-      DB_KEY: BuzW7kH6n84BGy22
+      DB_HOST: ql_box_db
+      DB_USER: ql_box
+      DB_PWD: Rd9s9HDdAkX252e67yiT
+      DB_DATABASE: ql_box
+      DB_KEY: ThM7bxd5444nxQz4V3LS
+      USER_KEY: /usr/src/app/.pem/user.pem
+      PRIVATE_KEY: /usr/src/app/.pem/private.pem
     ports:
       - 3142:3000
     depends_on:
-      - db
+      - ql-box-db
+    volumes:
+        - /var/ql-box/.pem:/usr/src/app/.pem
     networks:
-      - pwshield-net
+      - ql-box-net
 
-  db:
-    container_name: pwshield_db
+  ql-box-db:
+    container_name: ql_box_db
     image: mariadb
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: Jr6TU9bnv48b5WV58fQa
-      MYSQL_USER: pwshield
-      MYSQL_PASSWORD: iH2vc9mE4FYB2u6eU3x2
-      MYSQL_DATABASE: db
+      MYSQL_ROOT_PASSWORD: 7gvpWD7uD6tcGQ37K98g
+      MYSQL_USER: ql_box
+      MYSQL_PASSWORD: Rd9s9HDdAkX252e67yiT
+      MYSQL_DATABASE: ql_box
     volumes:
       - type: bind
         source: ./db/config.cnf
@@ -36,10 +40,10 @@ services:
       - type: bind
         source: ./db/init.sql
         target: /docker-entrypoint-initdb.d/init.sql
-      - /var/pwshield/data:/var/lib/mysql
+      - /var/ql-box/data:/var/lib/mysql
     networks:
-      - pwshield-net
+      - ql-box-net
 
 networks:
-  pwshield-net:
+  ql-box-net:
     driver: bridge

@@ -3,6 +3,8 @@
 const fs = require('fs')
 const crypto = require('crypto')
 
+const apiKey = process.env.PRIVATE_KEY
+const userKey = process.env.USER_KEY
 const algorithm = 'aes-128-cbc'
 
 function readAsync (path, encoding) {
@@ -29,7 +31,7 @@ function randomBytesAsync (size) {
 
 exports.encrypt = async (ctx, next) => {
     try {
-        const publicKey = await readAsync('./.pem/user.pem', 'utf8')
+        const publicKey = await readAsync(userKey, 'utf8')
         const key = await randomBytesAsync(16)
         let iv = await randomBytesAsync(16)
         
@@ -64,7 +66,7 @@ exports.decrypt = async (ctx, next) => {
         let iv = Buffer.from(array[0], 'base64')
         iv = Buffer.from(iv.toString(), 'hex')
         
-        const privateKey = await readAsync('./.pem/private.pem', 'utf8')
+        const privateKey = await readAsync(apiKey, 'utf8')
         let key = crypto.privateDecrypt({
             key: privateKey,
             padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
