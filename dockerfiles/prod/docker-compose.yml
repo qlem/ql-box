@@ -1,8 +1,8 @@
 version: '3.7'
 
 services:
-    ql-box:
-      container_name: ql_box
+  ql-box:
+    container_name: ql_box
     build:
       context: ./../../.
       dockerfile: ./dockerfiles/prod/Dockerfile
