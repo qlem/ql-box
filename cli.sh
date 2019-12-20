@@ -40,58 +40,89 @@ function decrypt() {
     fi
 }
 
-function post() {
-    echo -e "${GREEN}One account or many? [one/many]${NC}"
+function post_one() {
+    echo -e "${GREEN}New account: [name;username;email;password]${NC}"
     echo -n 'post > '
     read in
-    if [[ "$in" == 'one' ]]; then
-        echo -e "${GREEN}New account: [name;username;email;password]${NC}"
-        echo -n 'post > '
-        read in
-        IFS=';' read -ra acc <<< "$in"
-        if [[ "${#acc[@]}" -ne 4 ]]; then
-            echo -e "${RED}Wrong input!${NC}"
-            return 1
-        elif [[ -z "${acc[1]}" ]] && [[ -z "${acc[2]}" ]]; then
-            echo -e "${RED}Username and email cannot both be null!${NC}"
-            return 1
-        fi
-        json="{\"data\":{\"name\":\"${acc[0]}\",\"username\":\"${acc[1]}\",\"email\":\"${acc[2]}\",\"password\":\"${acc[3]}\"}}"
+    IFS=';' read -ra acc <<< "$in"
+    if [[ "${#acc[@]}" -ne 4 ]]; then
+        echo -e "${RED}Wrong input!${NC}"
+        return 1
+    elif [[ -z "${acc[1]}" ]] && [[ -z "${acc[2]}" ]]; then
+        echo -e "${RED}Username and email cannot both be null!${NC}"
+        return 1
+    fi
+    json="{\"data\":{\"name\":\"${acc[0]}\",\"username\":\"${acc[1]}\",\"email\":\"${acc[2]}\",\"password\":\"${acc[3]}\"}}"
+    data=$(encrypt "$json")
+    res=$(curl -sS -u "$USER" -X POST "${API_URI}/account" -d "$data" --raw)
+    if [[ "$?" -ne 0 ]]; then
+        echo -e "${BRED}An error has occurred!${NC}"
+        return "$?"
+    fi
+    echo $(decrypt "$res")
+}
+
+function post_many() {
+    echo -e "${GREEN}JSON file path? [/path/to/file.json]${NC}"
+    echo -n 'post > '
+    read file
+    if [[ ! -n "$file" ]]; then
+        echo -e "${RED}File expected!${NC}"
+        return 1
+    elif [[ ! -e "$file" ]]; then
+        echo -e "${RED}No such file or directory!${NC}"
+        return 1
+    elif [[ ! -f "$file" ]]; then
+        echo -e "${RED}File expected!${NC}"
+    elif jq -e . > /dev/null 2>&1 <<< $(cat "$file"); then
+        json=$(cat "$file" | jq -c .)
         data=$(encrypt "$json")
-        res=$(curl -sS -u "$USER" -X POST "${API_URI}/account" -d "$data" --raw)
+        res=$(curl -sS -u "$USER" -X POST "${API_URI}/account/bulk" -d "$data" --raw)
         if [[ "$?" -ne 0 ]]; then
             echo -e "${BRED}An error has occurred!${NC}"
             return "$?"
         fi
         echo $(decrypt "$res")
+    else
+        echo -e "${RED}JSON file is not valid!${NC}"
+    fi
+}
+
+function post() {
+    echo -e "${GREEN}One account or many? [one/many]${NC}"
+    echo -n 'post > '
+    read in
+    if [[ "$in" == 'one' ]]; then
+        post_one
+        if [[ "$?" -ne 0 ]]; then
+            return 1
+        fi
     elif [[ "$in" == 'many' ]]; then
-        echo -e "${GREEN}JSON file path? [/path/to/file.json]${NC}"
-        echo -n 'post > '
-        read file
-        if [[ ! -n "$file" ]]; then
-            echo -e "${RED}File expected!${NC}"
+        post_many
+        if [[ "$?" -ne 0 ]]; then
             return 1
-        elif [[ ! -e "$file" ]]; then
-            echo -e "${RED}No such file or directory!${NC}"
-            return 1
-        elif [[ ! -f "$file" ]]; then
-            echo -e "${RED}File expected!${NC}"
-        elif jq -e . > /dev/null 2>&1 <<< $(cat "$file"); then
-            json=$(cat "$file" | jq -c .)
-            data=$(encrypt "$json")
-            res=$(curl -sS -u "$USER" -X POST "${API_URI}/account/bulk" -d "$data" --raw)
-            if [[ "$?" -ne 0 ]]; then
-                echo -e "${BRED}An error has occurred!${NC}"
-                return "$?"
-            fi
-            echo $(decrypt "$res")
-        else
-            echo -e "${RED}JSON file is not valid!${NC}"
         fi
     elif [[ ! -n "$in" ]]; then
         echo -e "${YLLW}Command expected!${NC}"
     else
         echo -e "${YLLW}Unknown command!${NC}"
+    fi
+}
+
+function get_one() {
+    echo -e "${GREEN}Account name?${NC}"
+    echo -n 'get > '
+    read name
+    if [[ -n "$name" ]]; then
+        param=$(echo -n "${name//[[:blank:]]/%20}")
+        res=$(curl -sS -u "$USER" -X GET "${API_URI}/account?name=${fname}" --raw)
+        if [[ "$?" -ne 0 ]]; then
+            echo -e "${BRED}An error has occurred!${NC}"
+            return "$?"
+        fi
+        echo $(decrypt "$res")
+    else
+        echo -e "${RED}Account name cannot be null!${NC}"
     fi
 }
 
@@ -107,19 +138,9 @@ function get() {
         fi
         echo $(decrypt "$res")
     elif [[ "$in" == 'one' ]]; then
-        echo -e "${GREEN}Account name?${NC}"
-        echo -n 'get > '
-        read name
-        if [[ -n "$name" ]]; then
-            param=$(echo -n "${name//[[:blank:]]/%20}")
-            res=$(curl -sS -u "$USER" -X GET "${API_URI}/account?name=${fname}" --raw)
-            if [[ "$?" -ne 0 ]]; then
-                echo -e "${BRED}An error has occurred!${NC}"
-                return "$?"
-            fi
-            echo $(decrypt "$res")
-        else
-            echo -e "${RED}Account name cannot be null!${NC}"
+        get_one
+        if [[ "$?" -ne 0 ]]; then
+            return 1
         fi
     elif [[ ! -n "$in" ]]; then
         echo -e "${YLLW}Command expected!${NC}"
