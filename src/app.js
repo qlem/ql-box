@@ -1,6 +1,9 @@
 'use strict'
 
-require('dotenv').config()
+if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+    require('dotenv').config()
+}
+
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
 const router = require('./controllers/index')

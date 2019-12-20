@@ -1,6 +1,6 @@
 version: '3.7'
+
 services:
-  
     ql-box:
       container_name: ql_box
     build:
@@ -9,10 +9,10 @@ services:
     restart: always
     environment:
       DB_HOST: ql_box_db
-      DB_USER: ql_box
-      DB_PWD: Rd9s9HDdAkX252e67yiT
-      DB_DATABASE: ql_box
-      DB_KEY: ThM7bxd5444nxQz4V3LS
+      DB_USER: "${DB_USER}"
+      DB_PWD: "${DB_PASSWORD}"
+      DB_DATABASE: "${DB_DATABASE}"
+      DB_KEY: "${DB_KEY}"
       USER_KEY: /usr/src/app/.pem/user.pem
       PRIVATE_KEY: /usr/src/app/.pem/private.pem
     ports:
@@ -20,7 +20,7 @@ services:
     depends_on:
       - ql-box-db
     volumes:
-        - /var/ql-box/.pem:/usr/src/app/.pem
+      - /var/ql-box/.pem:/usr/src/app/.pem
     networks:
       - ql-box-net
 
@@ -29,10 +29,10 @@ services:
     image: mariadb
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 7gvpWD7uD6tcGQ37K98g
-      MYSQL_USER: ql_box
-      MYSQL_PASSWORD: Rd9s9HDdAkX252e67yiT
-      MYSQL_DATABASE: ql_box
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_DATABASE: "${DB_DATABASE}"
     volumes:
       - type: bind
         source: ./db/config.cnf

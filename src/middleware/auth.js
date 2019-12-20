@@ -30,7 +30,7 @@ async function c (ctx, next) {
     try {
         const username = ctx.state.credentials[0]
         const res = await User.findOne(username)
-        if (res.lenth < 1) {
+        if (res.length < 1) {
             ctx.status = 401
             return
         }
