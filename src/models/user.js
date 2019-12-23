@@ -1,7 +1,5 @@
 'use strict'
 
-const { db } = require('./../utils/client')
+const { pool } = require('./../utils/client')
 
-exports.findOne = username => db.query('SELECT * FROM users WHERE (username=:username)', {
-    username: username
-})
+exports.findOne = username => pool.query('SELECT * FROM users WHERE (username=:username)', {username: username})

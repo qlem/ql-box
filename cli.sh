@@ -19,24 +19,24 @@ YLLW='\e[0;33m'
 NC='\e[0m'
 
 function encrypt() {
-    iv=$(openssl rand -hex 16)
-    key=$(openssl rand -hex 16)
-    enc=$(echo -n "$1" | openssl enc -aes-128-cbc -e -a -A -salt -iv "$iv" -K "$key")
-    ekey=$(echo -n "$key" | openssl rsautl -encrypt -oaeps -pubin -inkey "$PUB_KEY" | base64 -w 0)
-    eiv=$(echo -n "$iv" | base64 -w 0)
-    echo -n "$eiv:$ekey:$enc"
+    local iv=$(openssl rand -hex 16)
+    local key=$(openssl rand -hex 16)
+    local enc=$(echo -n "$1" | openssl enc -aes-128-cbc -e -a -A -salt -iv "$iv" -K "$key")
+    local ekey=$(echo -n "$key" | openssl rsautl -encrypt -oaep -pubin -inkey "$PUB_KEY" | base64 -w 0)
+    local eiv=$(echo -n "$iv" | base64 -w 0)
+    DATA="$eiv:$ekey:$enc"
 }
 
 function decrypt() {
     reg=^[A-Za-z0-9+/]+={0,2}:[A-Za-z0-9+/]+={0,2}:[A-Za-z0-9+/]+={0,2}$
     if [[ "$1" =~ $reg ]]; then
         IFS=':' read -ra enc <<< "$1"
-        key=$(echo -n "${enc[1]}" | base64 --decode | openssl rsautl -decrypt -oaep -inkey "$PVT_KEY" | od -t x1 -An | tr -d ' ')
-        iv=$(echo -n "${enc[0]}" | base64 --decode | od -t x1 -An | tr -d ' ')
-        data=$(echo -n "${enc[2]}" | openssl enc -aes-128-cbc -d -a -A -iv "$iv" -K "$key")
-        echo "$data"
+        local key=$(echo -n "${enc[1]}" | base64 --decode | openssl rsautl -decrypt -oaep -inkey "$PVT_KEY" | od -t x1 -An | tr -d ' ')
+        local iv=$(echo -n "${enc[0]}" | base64 --decode | od -t x1 -An | tr -d ' ')
+        local data=$(echo -n "${enc[2]}" | openssl enc -aes-128-cbc -d -a -A -iv "$iv" -K "$key")
+        DATA="$data"
     else
-        echo "$1"
+        DATA="$1"
     fi
 }
 
@@ -52,14 +52,15 @@ function post_one() {
         echo -e "${RED}Username and email cannot both be null!${NC}"
         return 1
     fi
-    json="{\"data\":{\"name\":\"${acc[0]}\",\"username\":\"${acc[1]}\",\"email\":\"${acc[2]}\",\"password\":\"${acc[3]}\"}}"
-    data=$(encrypt "$json")
-    res=$(curl -sS -u "$USER" -X POST "${API_URI}/account" -d "$data" --raw)
+    local json="{\"data\":{\"name\":\"${acc[0]}\",\"username\":\"${acc[1]}\",\"email\":\"${acc[2]}\",\"password\":\"${acc[3]}\"}}"
+    encrypt "$json"
+    local res=$(curl -sS -u "$USER" -X POST "${API_URI}/account" -d "$DATA" --raw)
     if [[ "$?" -ne 0 ]]; then
         echo -e "${BRED}An error has occurred!${NC}"
         return "$?"
     fi
-    echo $(decrypt "$res")
+    decrypt "$res"
+    echo "$DATA"
 }
 
 function post_many() {
@@ -75,14 +76,15 @@ function post_many() {
     elif [[ ! -f "$file" ]]; then
         echo -e "${RED}File expected!${NC}"
     elif jq -e . > /dev/null 2>&1 <<< $(cat "$file"); then
-        json=$(cat "$file" | jq -c .)
-        data=$(encrypt "$json")
-        res=$(curl -sS -u "$USER" -X POST "${API_URI}/account/bulk" -d "$data" --raw)
+        local json=$(cat "$file" | jq -c .)
+        encrypt "$json"
+        local res=$(curl -sS -u "$USER" -X POST "${API_URI}/account/bulk" -d "$DATA" --raw)
         if [[ "$?" -ne 0 ]]; then
             echo -e "${BRED}An error has occurred!${NC}"
             return "$?"
         fi
-        echo $(decrypt "$res")
+        decrypt "$res"
+        echo "$DATA"
     else
         echo -e "${RED}JSON file is not valid!${NC}"
     fi
@@ -114,13 +116,14 @@ function get_one() {
     echo -n 'get > '
     read name
     if [[ -n "$name" ]]; then
-        param=$(echo -n "${name//[[:blank:]]/%20}")
-        res=$(curl -sS -u "$USER" -X GET "${API_URI}/account?name=${fname}" --raw)
+        local param=$(echo -n "${name//[[:blank:]]/%20}")
+        local res=$(curl -sS -u "$USER" -X GET "${API_URI}/account?name=${param}" --raw)
         if [[ "$?" -ne 0 ]]; then
             echo -e "${BRED}An error has occurred!${NC}"
             return "$?"
         fi
-        echo $(decrypt "$res")
+        decrypt "$res"
+        echo "$DATA"
     else
         echo -e "${RED}Account name cannot be null!${NC}"
     fi
@@ -131,12 +134,13 @@ function get() {
     echo -n 'get > '
     read in
     if [[ "$in" == 'all' ]]; then
-        res=$(curl -sS -u "$USER" -X GET "${API_URI}/account/all" --raw)
+        local res=$(curl -sS -u "$USER" -X GET "${API_URI}/account/all" --raw)
         if [[ "$?" -ne 0 ]]; then
             echo -e "${BRED}An error has occurred!${NC}"
             return "$?"
         fi
-        echo $(decrypt "$res")
+        decrypt "$res"
+        echo "$DATA"
     elif [[ "$in" == 'one' ]]; then
         get_one
         if [[ "$?" -ne 0 ]]; then
