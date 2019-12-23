@@ -47,20 +47,19 @@ function post_one() {
     IFS=';' read -ra acc <<< "$in"
     if [[ "${#acc[@]}" -ne 4 ]]; then
         echo -e "${RED}Wrong input!${NC}"
-        return 1
     elif [[ -z "${acc[1]}" ]] && [[ -z "${acc[2]}" ]]; then
         echo -e "${RED}Username and email cannot both be null!${NC}"
-        return 1
+    else
+        local json="{\"data\":{\"name\":\"${acc[0]}\",\"username\":\"${acc[1]}\",\"email\":\"${acc[2]}\",\"password\":\"${acc[3]}\"}}"
+        encrypt "$json"
+        local res=$(curl -sS -u "$USER" -X POST "${API_URI}/account" -d "$DATA" --raw)
+        if [[ "$?" -ne 0 ]]; then
+            echo -e "${BRED}An error has occurred!${NC}"
+            return "$?"
+        fi
+        decrypt "$res"
+        echo "$DATA"
     fi
-    local json="{\"data\":{\"name\":\"${acc[0]}\",\"username\":\"${acc[1]}\",\"email\":\"${acc[2]}\",\"password\":\"${acc[3]}\"}}"
-    encrypt "$json"
-    local res=$(curl -sS -u "$USER" -X POST "${API_URI}/account" -d "$DATA" --raw)
-    if [[ "$?" -ne 0 ]]; then
-        echo -e "${BRED}An error has occurred!${NC}"
-        return "$?"
-    fi
-    decrypt "$res"
-    echo "$DATA"
 }
 
 function post_many() {
@@ -69,10 +68,8 @@ function post_many() {
     read file
     if [[ ! -n "$file" ]]; then
         echo -e "${RED}File expected!${NC}"
-        return 1
     elif [[ ! -e "$file" ]]; then
         echo -e "${RED}No such file or directory!${NC}"
-        return 1
     elif [[ ! -f "$file" ]]; then
         echo -e "${RED}File expected!${NC}"
     elif jq -e . > /dev/null 2>&1 <<< $(cat "$file"); then
@@ -96,14 +93,8 @@ function post() {
     read in
     if [[ "$in" == 'one' ]]; then
         post_one
-        if [[ "$?" -ne 0 ]]; then
-            return 1
-        fi
     elif [[ "$in" == 'many' ]]; then
         post_many
-        if [[ "$?" -ne 0 ]]; then
-            return 1
-        fi
     elif [[ ! -n "$in" ]]; then
         echo -e "${YLLW}Command expected!${NC}"
     else
@@ -143,9 +134,6 @@ function get() {
         echo "$DATA"
     elif [[ "$in" == 'one' ]]; then
         get_one
-        if [[ "$?" -ne 0 ]]; then
-            return 1
-        fi
     elif [[ ! -n "$in" ]]; then
         echo -e "${YLLW}Command expected!${NC}"
     else
