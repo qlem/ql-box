@@ -8,8 +8,8 @@ CREATE TABLE users (
 CREATE TABLE accounts (
     id INT(6) UNSIGNED NOT NULL AUTO_INCREMENT,
     name VARCHAR(64) NOT NULL UNIQUE,
-    email VARCHAR(64),
     username VARCHAR(64),
+    email VARCHAR(64),
     password VARBINARY(128) NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE='InnoDB';
