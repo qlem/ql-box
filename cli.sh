@@ -1,13 +1,16 @@
 #!/bin/sh
 
 API_URI='http://localhost:3000'
-USER='john'
+# USER='john'
+USER='qlem'
 
 # should be the api public key for encryption
-PUB_KEY='/path/to/keys/dir/api.pem'
+# PUB_KEY='/path/to/keys/dir/api.pem'
+PUB_KEY='/home/qlem/.ssh/ql-box/api_pub.pem'
 
 # should be the user private key for decryption
-PVT_KEY='/path/to/keys/dir/private.pem'
+# PVT_KEY='/path/to/keys/dir/private.pem'
+PVT_KEY='/home/qlem/.ssh/ql-box/user_pvt.pem'
 
 # some colors
 GREEN='\e[0;32m'
@@ -40,9 +43,49 @@ function decrypt() {
     fi
 }
 
-function post_one() {
+function update() {
+    echo -e "${GREEN}Update account: [name;username;email;password]${NC}"
+    echo -n 'update > '
+    read in
+    IFS=';' read -ra acc <<< "$in"
+    if [[ "${#acc[@]}" -ne 4 ]]; then
+        echo -e "${RED}Wrong input!${NC}"
+    elif [[ -z "${acc[1]}" ]] && [[ -z "${acc[2]}" ]]; then
+        echo -e "${RED}Username and email cannot both be null!${NC}"
+    else
+        local json="{\"data\":{\"name\":\"${acc[0]}\",\"username\":\"${acc[1]}\",\"email\":\"${acc[2]}\",\"password\":\"${acc[3]}\"}}"
+        encrypt "$json"
+        local res=$(curl -sS -u "$USER" -X POST "${API_URI}/account/update" -d "$DATA" --raw)
+        if [[ "$?" -ne 0 ]]; then
+            echo -e "${BRED}An error has occurred!${NC}"
+            return "$?"
+        fi
+        decrypt "$res"
+        echo "$DATA"
+    fi
+}
+
+function delete() {
+    echo -e "${GREEN}Account name?${NC}"
+    echo -n 'delete > '
+    read name
+    if [[ -n "$name" ]]; then
+        local param=$(echo -n "${name//[[:blank:]]/%20}")
+        local res=$(curl -sS -u "$USER" -X DELETE "${API_URI}/account?name=${param}" --raw)
+        if [[ "$?" -ne 0 ]]; then
+            echo -e "${BRED}An error has occurred!${NC}"
+            return "$?"
+        fi
+        decrypt "$res"
+        echo "$DATA"
+    else
+        echo -e "${RED}Account name cannot be null!${NC}"
+    fi
+}
+
+function add_one() {
     echo -e "${GREEN}New account: [name;username;email;password]${NC}"
-    echo -n 'post > '
+    echo -n 'add > '
     read in
     IFS=';' read -ra acc <<< "$in"
     if [[ "${#acc[@]}" -ne 4 ]]; then
@@ -62,9 +105,9 @@ function post_one() {
     fi
 }
 
-function post_many() {
+function add_many() {
     echo -e "${GREEN}JSON file path? [/path/to/file.json]${NC}"
-    echo -n 'post > '
+    echo -n 'add > '
     read file
     if [[ ! -n "$file" ]]; then
         echo -e "${RED}File expected!${NC}"
@@ -87,14 +130,14 @@ function post_many() {
     fi
 }
 
-function post() {
+function add() {
     echo -e "${GREEN}One account or many? [one/many]${NC}"
-    echo -n 'post > '
+    echo -n 'add > '
     read in
     if [[ "$in" == 'one' ]]; then
-        post_one
+        add_one
     elif [[ "$in" == 'many' ]]; then
-        post_many
+        add_many
     elif [[ ! -n "$in" ]]; then
         echo -e "${YLLW}Command expected!${NC}"
     else
@@ -143,10 +186,12 @@ function get() {
 
 function display_help() {
     echo 'Commands:
-  get     Fetch one/all accounts
-  post    Add one/many accounts
-  help    Display this help
-  exit    Exit the program'
+  get      Fetch one/all accounts
+  add      Add one/many accounts
+  update   Update an existing account
+  delete   Delete an existing account
+  help     Display this help
+  exit     Exit the program'
 }
 
 echo -e "${BBLUE}Welcome to ql-box${NC}"
@@ -162,8 +207,12 @@ while true; do
         display_help
     elif [[ "$in" == 'get' ]]; then
         get
-    elif [[ "$in" == 'post' ]]; then
-        post
+    elif [[ "$in" == 'add' ]]; then
+        add
+    elif [[ "$in" == 'update' ]]; then
+        update
+    elif [[ "$in" == 'delete' ]]; then
+        delete
     elif [[ -n "$in" ]]; then
         echo -e "${YLLW}Unknown command!${NC}"
     fi

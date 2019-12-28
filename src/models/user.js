@@ -2,4 +2,7 @@
 
 const { pool } = require('./../utils/client')
 
-exports.findOne = username => pool.query('SELECT * FROM users WHERE (username=:username)', {username: username})
+exports.findOne = username => {
+    const sql = 'SELECT * FROM users WHERE (username=:username)'
+    return pool.query(sql, {username: username})
+}

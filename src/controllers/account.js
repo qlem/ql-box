@@ -9,18 +9,6 @@ const router = new Router()
 
 router.use(Auth.auth)
 
-function checkAccountFields (data) {
-    if (!data.name || !data.password || !data.email && !data.username) {
-        return false
-    }
-    Object.keys(data).forEach(key => {
-        if (data[key] === '') {
-            data[key] = null
-        }
-    })
-    return true
-}
-
 function checkBody (ctx, next) {
     try {
         const body = ctx.request.body
@@ -41,7 +29,7 @@ router.get('/', async (ctx, next) => {
             ctx.status = 400
             return
         }
-        const res = await Account.findOne(ctx.query.name)
+        const res = await Account.find(ctx.query.name)
         if (res.length === 0) {
             ctx.body = {}
         } else {
@@ -72,13 +60,14 @@ router.get('/all', async (ctx, next) => {
 router.post('/', Crypto.decrypt, checkBody, async (ctx, next) => {
     try {
         const data = ctx.request.body.data
-        if (!checkAccountFields(data)) {
+        if (!data.name || !data.password || !data.email && !data.username) {
             ctx.status = 400
             return
         }
-        const res = await Account.insert(data.name, data.email, data.username,
-            data.password)
-        ctx.body = res
+        const res = await Account.insert(data)
+        ctx.body = {
+            inserted: res.affectedRows
+        }
         return next()
     } catch (err) {
         console.error(err)
@@ -93,24 +82,45 @@ router.post('/bulk', Crypto.decrypt, checkBody, async (ctx, next) => {
             ctx.status = 400
             return
         }
-        const result = {
-            inserted: 0,
-            failed: 0
+        const res = await Account.insertMany(data)
+        ctx.body = {
+            inserted: res.affectedRows
         }
-        for (let i = 0; i < data.length; i++) {
-            if (checkAccountFields(data[i])) {
-                try {
-                    const res = await Account.insert(data[i].name,  data[i].email, 
-                        data[i].username, data[i].password)
-                    result.inserted++
-                } catch (err) {
-                    result.failed++
-                }
-            } else {
-                result.failed++
-            }
+        return next()
+    } catch (err) {
+        console.error(err)
+        ctx.status = 500
+    }
+}, Crypto.encrypt)
+
+router.post('/update', Crypto.decrypt, checkBody, async (ctx, next) => {
+    try {
+        const data = ctx.request.body.data
+        if (!data.name || !data.password || !data.email && !data.username) {
+            ctx.status = 400
+            return
         }
-        ctx.body = result
+        const res = await Account.update(data)
+        ctx.body = {
+            updated: res.affectedRows
+        }
+        return next()
+    } catch (err) {
+        console.error(err)
+        ctx.status = 500
+    }
+}, Crypto.encrypt)
+
+router.delete('/', async (ctx, next) => {
+    try {
+        if (!ctx.query.name) {
+            ctx.status = 400
+            return
+        }
+        const res = await Account.delete(ctx.query.name)
+        ctx.body = {
+            deleted: res.affectedRows
+        }
         return next()
     } catch (err) {
         console.error(err)
