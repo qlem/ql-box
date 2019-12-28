@@ -76,7 +76,7 @@ function delete() {
         decrypt "$res"
         echo "$DATA"
     else
-        echo -e "${RED}Account name cannot be null!${NC}"
+        echo -e "${RED}Account name expected!${NC}"
     fi
 }
 
@@ -156,7 +156,7 @@ function get_one() {
         decrypt "$res"
         echo "$DATA"
     else
-        echo -e "${RED}Account name cannot be null!${NC}"
+        echo -e "${RED}Account name expected!${NC}"
     fi
 }
 
