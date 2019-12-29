@@ -8,10 +8,10 @@ services:
     ports:
         - 3306:3306
     environment:
-      MYSQL_ROOT_PASSWORD: Jr6TU9bnv48b5WV58fQa
-      MYSQL_USER: ql_box
-      MYSQL_PASSWORD: iH2vc9mE4FYB2u6eU3x2
-      MYSQL_DATABASE: ql_box
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_DATABASE: "${DB_DATABASE}"
     volumes:
       - /var/ql-box/data:/var/lib/mysql
 
