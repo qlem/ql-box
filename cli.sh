@@ -1,13 +1,13 @@
 #!/bin/sh
 
 API_URI='http://localhost:3000'
-USER='john'
+USER='qlem'
 
 # should be the api public key for encryption
-PUB_KEY='/path/to/keys/dir/api.pem'
+PUB_KEY='/home/qlem/.ssh/ql-box/api_pub.pem'
 
 # should be the user private key for decryption
-PVT_KEY='/path/to/keys/dir/private.pem'
+PVT_KEY='/home/qlem/.ssh/ql-box/user_pvt.pem'
 
 # some colors
 GREEN='\e[0;32m'
