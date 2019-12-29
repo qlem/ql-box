@@ -25,12 +25,12 @@ PVT_KEY="/home/${USER}/.ssh/ql-box/user_pvt.pem"
 [[ ! -f "$PUB_KEY" ]] && echo 'Public key file does not exist!' && exit 1
 [[ ! -f "$PVT_KEY" ]] && echo 'Private key file does not exist!' && exit 1
 
-GREEN='\e[0;32m'
 BLUE='\e[0;34m'
 BBLUE='\e[1;34m'
 RED='\e[0;31m'
 BRED='\e[1;31m'
 YLLW='\e[0;33m'
+BWHITE='\e[1;37m'
 NC='\e[0m'
 
 function encrypt() {
@@ -56,7 +56,7 @@ function decrypt() {
 }
 
 function update() {
-    echo -e "${GREEN}Update account: [name;username;email;password]${NC}"
+    echo -e "${BLUE}Update account: [name;username;email;password]${NC}"
     echo -n 'update > '
     read in
     IFS=';' read -ra acc <<< "$in"
@@ -78,7 +78,7 @@ function update() {
 }
 
 function delete() {
-    echo -e "${GREEN}Account name?${NC}"
+    echo -e "${BLUE}Account name?${NC}"
     echo -n 'delete > '
     read name
     if [[ -n "$name" ]]; then
@@ -96,7 +96,7 @@ function delete() {
 }
 
 function add_one() {
-    echo -e "${GREEN}New account: [name;username;email;password]${NC}"
+    echo -e "${BLUE}New account: [name;username;email;password]${NC}"
     echo -n 'add > '
     read in
     IFS=';' read -ra acc <<< "$in"
@@ -118,7 +118,7 @@ function add_one() {
 }
 
 function add_many() {
-    echo -e "${GREEN}JSON file path? [/path/to/file.json]${NC}"
+    echo -e "${BLUE}JSON file path? [/path/to/file.json]${NC}"
     echo -n 'add > '
     read file
     if [[ ! -n "$file" ]]; then
@@ -143,7 +143,7 @@ function add_many() {
 }
 
 function add() {
-    echo -e "${GREEN}One account or many? [one/many]${NC}"
+    echo -e "${BLUE}One account or many? [one/many]${NC}"
     echo -n 'add > '
     read in
     if [[ "$in" == 'one' ]]; then
@@ -158,7 +158,7 @@ function add() {
 }
 
 function get_one() {
-    echo -e "${GREEN}Account name?${NC}"
+    echo -e "${BLUE}Account name?${NC}"
     echo -n 'get > '
     read name
     if [[ -n "$name" ]]; then
@@ -176,7 +176,7 @@ function get_one() {
 }
 
 function get() {
-    echo -e "${GREEN}One account or list all accounts names? [one/all]${NC}"
+    echo -e "${BLUE}One account or list all accounts names? [one/all]${NC}"
     echo -n 'get > '
     read in
     if [[ "$in" == 'all' ]]; then
@@ -213,7 +213,7 @@ while true; do
     echo -n '> '
     read in
     if [[ "$in" == 'exit' ]]; then
-        echo 'Bye'
+        echo -e "${BWHITE}Bye..${NC}"
         exit 0
     elif [[ "$in" == 'help' ]]; then
         display_help
