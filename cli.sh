@@ -1,15 +1,30 @@
 #!/bin/sh
 
+if [[ "$#" -gt 4 ]]; then
+    echo 'USAGE: script.sh <username> <api uri> <api public key> <user private key>'
+    exit 1
+fi 
+
+for arg in "$@"; do
+    if [[ "$arg" == '-h' ]]; then
+        echo 'USAGE: script.sh <username> <api uri> <api public key> <user private key>'
+        exit 0
+    fi
+done
+
 API_URI='http://localhost:3000'
-USER='qlem'
+USER="$USER"
+PUB_KEY="/home/${USER}/.ssh/ql-box/api_pub.pem"
+PVT_KEY="/home/${USER}/.ssh/ql-box/user_pvt.pem"
 
-# should be the api public key for encryption
-PUB_KEY='/home/qlem/.ssh/ql-box/api_pub.pem'
+[[ "$1" ]] && USER="$1"
+[[ "$2" ]] && API_URI="$2"
+[[ "$3" ]] && PUB_KEY="$3"
+[[ "$4" ]] && PVT_KEY="$4"
 
-# should be the user private key for decryption
-PVT_KEY='/home/qlem/.ssh/ql-box/user_pvt.pem'
+[[ ! -f "$PUB_KEY" ]] && echo 'Public key file does not exist!' && exit 1
+[[ ! -f "$PVT_KEY" ]] && echo 'Private key file does not exist!' && exit 1
 
-# some colors
 GREEN='\e[0;32m'
 BLUE='\e[0;34m'
 BBLUE='\e[1;34m'
