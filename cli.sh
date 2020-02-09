@@ -55,6 +55,20 @@ function decrypt() {
     fi
 }
 
+function accountJSON() {
+    if [[ -z "${acc[1]}" ]]; then
+        local username='null'
+    else
+        local username="\"${acc[1]}\""
+    fi
+    if [[ -z "${acc[2]}" ]]; then
+        local email='null'
+    else
+        local email="\"${acc[2]}\""
+    fi
+    json="{\"data\":{\"name\":\"${acc[0]}\",\"username\":$username,\"email\":$email,\"password\":\"${acc[3]}\"}}"
+}
+
 function update() {
     echo -e "${BLUE}Update account: [name;username;email;password]${NC}"
     echo -n 'update > '
@@ -65,7 +79,7 @@ function update() {
     elif [[ -z "${acc[1]}" ]] && [[ -z "${acc[2]}" ]]; then
         echo -e "${RED}Username and email cannot both be null!${NC}"
     else
-        local json="{\"data\":{\"name\":\"${acc[0]}\",\"username\":\"${acc[1]}\",\"email\":\"${acc[2]}\",\"password\":\"${acc[3]}\"}}"
+        accountJSON
         encrypt "$json"
         local res=$(curl -sS -u "$USER" -X POST "${API_URI}/account/update" -d "$DATA" --raw)
         if [[ "$?" -ne 0 ]]; then
@@ -105,7 +119,7 @@ function add_one() {
     elif [[ -z "${acc[1]}" ]] && [[ -z "${acc[2]}" ]]; then
         echo -e "${RED}Username and email cannot both be null!${NC}"
     else
-        local json="{\"data\":{\"name\":\"${acc[0]}\",\"username\":\"${acc[1]}\",\"email\":\"${acc[2]}\",\"password\":\"${acc[3]}\"}}"
+        accountJSON
         encrypt "$json"
         local res=$(curl -sS -u "$USER" -X POST "${API_URI}/account" -d "$DATA" --raw)
         if [[ "$?" -ne 0 ]]; then
