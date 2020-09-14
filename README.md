@@ -16,6 +16,10 @@ decrypt the symmetric key with his private key and use the decrypted symmetric k
 In the other way (user to server), the symmetric key is encrypted with the server public key. Then, the server can 
 decrypt the symmetric key with his private key and use the decrypted symmetric key to decrypt the data.
 
+## Public/private keys format
+
+Make sure the public/private keys used by the API and the CLI are in PEM format.
+
 ## How to run the API
 
 ### Environment variables
@@ -30,7 +34,7 @@ DB_KEY=mydbscretkey                   # used to encrypt the password of the stor
 USER_KEY=/path/to/user/public/key     # used to decrypt data from the client
 PRIVATE_KEY=/path/to/server/key       # used to encrypt data to the client
 ```
-You can create a `.env` file in the root project directory with the variables written in it.
+You should create a `.env` file in the root project directory with the variables written in it.
 
 ### The init.sql file
 
@@ -52,7 +56,6 @@ DB_USER=ql_box
 DB_PASSWORD=mydbuserpassword
 DB_DATABASE=ql_box
 ```
-
 
 3. Go into `dockerfiles/dev`. The docker-compose file here will create a mariadb service and a database adminer. 
 You can create and start these docker services with `docker-compose up -d`.
@@ -86,4 +89,13 @@ Copy or move `cli.sh` in your binaries directory e.g. `cp cli.sh ~/bin/qlbox.sh 
 $> qlbox.sh -h
 USAGE: script.sh <username> <api uri> <api public key> <user private key>
 ```
-All parameters are optional.
+All parameters are optional. `username` parameter must match the username of the user added previously into the 
+table `users` in the database. `api public key` must be the path to server public key file. `user private key` must
+be the path to the user private key file.
+Default value are:
+```
+USERNAME=$USER
+API_URI=http://localhost:3000
+API_PUB_KEY=/home/$USER/.ssh/ql-box/api_pub.pem
+USER_PVT_KEY=/home/$USER/.ssh/ql-box/user_pvt.pem
+```
