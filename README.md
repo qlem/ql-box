@@ -20,23 +20,17 @@ decrypt the symmetric key with his private key and use the decrypted symmetric k
 
 ### Environment variables
 
-For development or production environment, the following variables are required by the API and the docker services:
+For development, the following variables are required by the API:
 ```
-DB_ROOT_PASSWORD=mydbrootpassword
+DB_HOST=localhost
 DB_USER=ql_box
-DB_PASSWORD=mydbuserpassword
+DB_PWD=mydbuserpassword
 DB_DATABASE=ql_box
 DB_KEY=mydbscretkey                   # used to encrypt the password of the stored accounts in the db
-```
-
-For development environment only, these are also required by the API:
-```
-...
 USER_KEY=/path/to/user/public/key     # used to decrypt data from the client
 PRIVATE_KEY=/path/to/server/key       # used to encrypt data to the client
 ```
-
-A common way is to create a `.env` file with the variables written in it.
+You can create a `.env` file in the root project directory with the variables written in it.
 
 ### The init.sql file
 
@@ -51,7 +45,14 @@ Also, these credentials will be used during the authentication (basic Auth) to t
 
 1. Make sure the environment variables required are set or create a `.env` file into the root project directory.
 
-2. Create or copy/paste the previous `.env` file (with the same variables/values) into `dockerfiles/dev`.
+2. Create a `.env` file with the following variables into `dockerfiles/dev`:
+```
+DB_ROOT_PASSWORD=mydbrootpassword
+DB_USER=ql_box
+DB_PASSWORD=mydbuserpassword
+DB_DATABASE=ql_box
+```
+
 
 3. Go into `dockerfiles/dev`. The docker-compose file here will create a mariadb service and a database adminer. 
 You can create and start these docker services with `docker-compose up -d`.
@@ -60,7 +61,14 @@ You can create and start these docker services with `docker-compose up -d`.
 
 ### Production
 
-1. Make sure to create a `.env` file with the required variables in `dockerfiles/prod`.
+1. Create a `.env` file with the following variables into `dockerfiles/prod`:
+```
+DB_ROOT_PASSWORD=mydbrootpassword
+DB_USER=ql_box
+DB_PASSWORD=mydbuserpassword
+DB_DATABASE=ql_box
+DB_KEY=mydbscretkey
+```
 
 2. On the host, make sure to create the directory `/var/ql-box/.pem`. This directory must contain the user public key 
 `user.pem` and the server private key `private.pem`.
