@@ -82,7 +82,8 @@ will listen on port `3000`.
 
 ## CLI
 
-Copy or move `cli.sh` in your binaries directory e.g. `cp cli.sh ~/bin/qlbox.sh && chmod 755 ~/bin/qlbox.sh`.
+You can add/update/delete account through the CLI. Copy or move `cli.sh` script file in your binaries directory e.g. 
+`cp cli.sh ~/bin/qlbox.sh && chmod 755 ~/bin/qlbox.sh`.
 
 ### Usage
 
