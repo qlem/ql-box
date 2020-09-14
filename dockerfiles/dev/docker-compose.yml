@@ -13,6 +13,12 @@ services:
       MYSQL_PASSWORD: "${DB_PASSWORD}"
       MYSQL_DATABASE: "${DB_DATABASE}"
     volumes:
+      - type: bind
+        source: ./../db/config.cnf
+        target: /etc/mysql/conf.d/config.cnf
+      - type: bind
+        source: ./../db/init.sql
+        target: /docker-entrypoint-initdb.d/init.sql
       - /var/ql-box/data:/var/lib/mysql
 
   adminer:
