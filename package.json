@@ -4,7 +4,7 @@
   "description": "A secure box to store and manage passwords.",
   "main": "src/app.js",
   "dependencies": {
-    "bcrypt": "^3.0.7",
+    "bcrypt": "^5.0.0",
     "koa": "^2.11.0",
     "koa-bodyparser": "^4.2.1",
     "koa-compose": "^4.1.0",
