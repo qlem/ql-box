@@ -85,14 +85,17 @@ will listen on port `3000`.
 Copy or move `cli.sh` in your binaries directory e.g. `cp cli.sh ~/bin/qlbox.sh && chmod 755 ~/bin/qlbox.sh`.
 
 ### Usage
+
 ```
 $> qlbox.sh -h
 USAGE: script.sh <username> <api uri> <api public key> <user private key>
 ```
+
 All parameters are optional. `username` parameter must match the username of the user added previously into the 
 table `users` in the database. `api public key` must be the path to server public key file. `user private key` must
 be the path to the user private key file.
-Default value are:
+
+Default values are:
 ```
 USERNAME=$USER
 API_URI=http://localhost:3000
